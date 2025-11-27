@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=user_service.settings
+    depends_on:
+      - db
+
+  event-analytics-service:
+    build:
+      context: ./services/event-analytics-service
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+
+  ai-inference-service:
+    build:
+      context: ./services/ai-inference-service
+      dockerfile: Dockerfile
+    ports:
+      - "6000:6000"
+    depends_on:
+      - db
+
+  communication-service:
+    build:
+      context: ./services/communication-service
+      dockerfile: Dockerfile
+    ports:
+      - "7000:7000"
+    depends_on:
+      - db
+
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - user-service
+      - event-analytics-service
+      - ai-inference-service
+      - communication-service
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: retain_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:

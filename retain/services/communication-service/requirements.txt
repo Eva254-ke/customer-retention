@@ -1,0 +1,5 @@
+Flask==2.1.1
+requests==2.26.0
+celery==5.2.0
+africastalking==1.0.0
+python-dotenv==0.19.2

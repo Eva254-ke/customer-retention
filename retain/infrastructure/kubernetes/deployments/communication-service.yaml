@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: communication-service
+  labels:
+    app: communication-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: communication-service
+  template:
+    metadata:
+      labels:
+        app: communication-service
+    spec:
+      containers:
+      - name: communication-service
+        image: your-docker-repo/communication-service:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: AFRICAS_TALKING_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: africas-talking-secret
+              key: api_key
+        - name: AFRICAS_TALKING_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: africas-talking-secret
+              key: username
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "500m"
+          limits:
+            memory: "512Mi"
+            cpu: "1"
+      imagePullSecrets:
+      - name: regcred
