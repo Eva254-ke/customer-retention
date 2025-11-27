@@ -1,215 +1,123 @@
-# Customer Retention Lab – Business Use Cases & Pricing
+# Customer Retention Lab
 
-## 1. Proactive Churn Prevention for B2C Apps
+## The Problem
 
-**Who it’s for**  
-Ride‑hailing, food delivery, fintech, e‑commerce, telco and subscription apps with large consumer bases.
+B2C apps in Africa (ride-hailing, fintech, delivery, telco) lose 20–40% of users silently every quarter. These customers don't complain—they just stop using the product. Traditional win-back campaigns are:
 
-**Problem**  
-High silent churn from low‑engagement customers who never complain but simply stop using the product.
-
-**Solution**  
-Use the Retention Lab to:
-- Score churn risk for targeted segments (e.g., last active > 14 days, low transaction volume).
-- Generate personalized Gemini messages nudging return (discounts, new features, reminders).
-- Deliver messages via SMS using the integrated communications service.
-
-**Workflow**  
-1. Export users from CRM/warehouse and bulk‑upload via CSV.  
-2. Use presets (high/medium/low risk) or custom features (city, rides, spend, segment).  
-3. Run inference to get risk + suggested message.  
-4. Approve or edit copy and send SMS directly.  
-5. Track response and conversion via `/api/analytics/events/`.
-
-**Value**  
-- 5–15% lift in reactivation for at‑risk cohorts.  
-- Reduced blanket campaigns; more targeted, lower‑cost outreach.
-
-**Recommended pricing**  
-- Platform fee: **$500/month** base for up to 50k profiled users.  
-- Usage: **$0.005 per inference** and **$0.02 per SMS** (pass‑through + margin).  
-- Pilot: 30‑day free trial capped at 5k inferences / 2k SMS.
+- **Generic**: Batch emails with low open rates.
+- **Slow**: Marketing teams need weeks to set up segments and copy.
+- **Disconnected**: Prediction, copywriting, and delivery live in separate tools.
 
 ---
 
-## 2. Customer Support Save Desk (CS Operations)
+## The Solution
 
-**Who it’s for**  
-Support teams handling cancellations, downgrades and repeated complaints.
+**Retention Lab** is an AI-powered retention platform that predicts churn, generates personalized messages, and delivers them via SMS using Africa's Talking SMS APIs.
 
-**Problem**  
-Agents handle save opportunities inconsistently; lack structured way to prioritize who to “fight for”.
+| Step | What happens |
+|------|--------------|
+| 1. Upload | Bulk-upload customers from CSV or connect via API |
+| 2. Score | AI scores churn risk based on engagement features |
+| 3. Generate | Gemini writes a short, personalized SMS nudge |
+| 4. Send | One-click delivery via Africa's Talking SMS |
+| 5. Track | Log responses and measure reactivation |
 
-**Solution**  
-- Connect support/CSAT data as features (tickets opened, low CSAT events).  
-- Use Retention Lab to prioritize high‑risk accounts and generate tailored save offers.  
-- Trigger SMS follow‑ups after tough interactions or when a case is resolved.
-
-**Workflow**  
-1. Daily export of accounts with low CSAT / many tickets → bulk upload.  
-2. Agents open the dashboard, filter by highest churn risk.  
-3. For each account, generate a personalized message (apology, credit, upgrade, callback link).  
-4. Log outcomes as analytics events for ROI reporting.
-
-**Value**  
-- Higher save rate on at‑risk customers.  
-- Standardized, high‑quality messaging for front‑line teams.
-
-**Recommended pricing**  
-- Seat‑based add‑on to core platform: **$50/agent/month** (min 5 agents).  
-- Includes up to 500 inferences per agent; above that, **$0.004 per inference**.
+**Result**: 5 to 15% lift in reactivation for at-risk cohorts, at a fraction of the cost of blanket campaigns.
 
 ---
 
-## 3. Dormant User Win‑Back Campaigns
+## Target Customer
 
-**Who it’s for**  
-Marketing & lifecycle teams responsible for re‑engagement.
+**Primary**: Growth / Lifecycle / Customer Success teams at B2C apps with a large number of users and user conversations
 
-**Problem**  
-Batch email win‑back campaigns have low open rates and weak personalization.
+**Verticals** (in order of priority):
 
-**Solution**  
-- Use churn risk + behavioural features (last purchase, category, city).  
-- Generate short SMS win‑back offers more likely to be seen and acted on.  
-- A/B test messages via segments (e.g., discount vs content‑driven).
-
-**Workflow**  
-1. Segment: `last_active_days > 30`, `segment in ['churned', 'at_risk']`.  
-2. Upload to Retention Lab and run inference.  
-3. Split by segment/city and send tailored SMS variants.  
-4. Measure reactivation (return sessions, orders) via analytics.
-
-**Value**  
-- Increase ROI on dormant cohorts that otherwise generate no revenue.  
-- Fast experiment loop for message/offer design.
-
-**Recommended pricing**  
-- Campaign bundle: **$2,000 per campaign** (up to 200k users) including:  
-  - 200k inferences  
-  - 50k SMS (SMS carrier fees extra if high‑cost routes)  
-- Additional volume at usage rates (same as Use Case 1).
+1. **Ride-hailing & delivery** – high churn, high SMS open rates, clear LTV per user.
+2. **Fintech & lending** – dormant accounts = lost revenue; compliance requires direct comms.
+3. **Telco & utilities** – large user bases, existing SMS infrastructure, need for personalization at scale.
 
 ---
 
-## 4. VIP / Enterprise Account Nurturing
+## Business Model
 
-**Who it’s for**  
-Account Management / Customer Success teams with high‑value B2B accounts.
+### Revenue Streams
 
-**Problem**  
-CSMs have limited bandwidth; some VIP accounts go quiet before renewal without proactive contact.
+| Stream | How it works | Example |
+|--------|--------------|---------|
+| **Platform fee** | Monthly base for access + users | $500/mo for up to 50k users |
+| **Inference usage** | Per-prediction charge | $0.005 per inference |
+| **SMS delivery** | Pass-through + margin | $0.02 per SMS (varies by country) |
 
-**Solution**  
-- Feed in engagement metrics (logins, feature adoption, ticket volume).  
-- Use churn risk + Gemini to draft check‑in messages or renewal nudges.  
-- Let CSMs review/edit and send via SMS or manually via email.
+### Unit Economics (per 10k users/month)
 
-**Workflow**  
-1. Monthly export of all accounts 90 days pre‑renewal with usage data.  
-2. Bulk upload and compute risk per account.  
-3. CSMs filter by high‑risk, high‑ARR cohort.  
-4. Generate outreach scripts, personalize lightly, send, and track responses.
+| Item | Cost | Revenue | Margin |
+|------|------|---------|--------|
+| Gemini API (10k inferences) | ~$5 | $50 | $45 |
+| SMS (2k sent @ $0.01 cost) | $20 | $40 | $20 |
+| Platform fee (allocated) | — | $100 | $100 |
+| **Total** | **$25** | **$190** | **$165 (87%)** |
 
-**Value**  
-- Higher renewal rates on key accounts.  
-- More consistent CSM motions across regions/teams.
+### Pricing Tiers
 
-**Recommended pricing**  
-- Enterprise plan starting at **$1,500/month** for up to 200 managed accounts.  
-- Includes 10 CSM seats, unlimited inferences on those accounts, and 5k SMS.
-
----
-
-## 5. Onboarding & First‑Week Support Nudges
-
-**Who it’s for**  
-Growth, product & support teams focused on activation.
-
-**Problem**  
-New signups drop off before seeing core value; support only hears from a small vocal subset.
-
-**Solution**  
-- Use Retention Lab to identify low‑engagement new users and send helpful, human‑sounding nudges.  
-- Include links to help center, support WhatsApp, or quick‑start flows.
-
-**Workflow**  
-1. Daily job pushes new users + basic usage stats as features.  
-2. Run inference and generate onboarding nudges.  
-3. Auto‑send SMS for highest‑risk new signups; leave others for email.
-
-**Value**  
-- Improved Day‑1 / Day‑7 activation metrics.  
-- Fewer “I signed up but never used it” churn cases.
-
-**Recommended pricing**  
-- Add‑on to any plan: **$300/month** for up to 20k new users per month, 20k inferences, 5k SMS.
+| Tier | Users | Inferences | SMS | Price |
+|------|-------|------------|-----|-------|
+| Starter | 20k | 20k | 5k | $490/mo |
+| Pro | 100k | 150k | 40k | $1,490/mo |
+| Enterprise | 500k+ | Custom | Custom | From $3,500/mo |
 
 ---
 
-## 6. Incident & Outage Incident Communication (Support‑Led)
+## Integration Options
 
-**Who it’s for**  
-Ops, SRE, and Support teams.
+### 1. No-code (Dashboard)
 
-**Problem**  
-During incidents, support gets flooded with tickets and communication is inconsistent.
+- Upload CSV of customers.
+- Use the web dashboard to run predictions and send SMS.
+- Best for: Small teams, pilots, non-technical users.
 
-**Solution**  
-- Maintain pre‑defined incident segments (by geography, product line).  
-- Quickly upload affected users and send clear, empathetic SMS updates.  
-- Use Gemini to adapt templates based on impact and ETA.
+### 2. API-first
 
-**Workflow**  
-1. Identify affected cohort (e.g., `city = 'Nairobi'`, `segment = 'loyal'`).  
-2. Upload / select cohort, choose an “incident” preset.  
-3. Generate message, legal/comms reviews, send SMS.  
-4. Optionally follow up with resolution message and survey.
+- `POST /api/inference/predict/` – get risk score + AI message.
+- `POST /api/communications/send-sms/` – send SMS directly.
+- `POST /api/users/bulk-upload/` – ingest users programmatically.
+- Best for: Engineering teams integrating into existing CRM/CDP.
 
-**Value**  
-- Reduces inbound volume during incidents.  
-- Improves trust via fast, transparent updates.
+### 3. Webhook / Event-driven
 
-**Recommended pricing**  
-- Included in Pro and Enterprise plans.  
-- SMS + inference usage charged per normal rates.
+- Customer's backend pushes events to `/api/analytics/events/`.
+- Retention Lab triggers predictions and messages automatically.
+- Best for: Real-time, automated retention flows.
 
 ---
 
-## Packaging & Plan Suggestions
+## Why Now
 
-To simplify sales conversations, you could package the above into 3 tiers:
-
-### Starter
-- Target: Early‑stage products, up to 20k MAU.  
-- Includes:
-  - 20k inferences/month  
-  - 5k SMS/month  
-  - Basic dashboard + bulk upload  
-- **Price:** **$490/month**
-
-### Pro
-- Target: Growing B2C / B2B companies with dedicated CS or growth teams.
-- Includes:
-  - 150k inferences/month  
-  - 40k SMS/month  
-  - Bulk upload + users, analytics, and incident workflows  
-  - 10 CS/Support seats  
-- **Price:** **$1,490/month**
-
-### Enterprise
-- Target: Large enterprises with complex data and many agents.
-- Includes:
-  - Custom inference & SMS volumes (starting at 500k inferences, 150k SMS)  
-  - Unlimited dashboard users  
-  - Priority support & onboarding assistance  
-  - Optional on‑prem / VPC deployment  
-- **Price:** from **$3,500/month** (quote‑based)
+1. **AI cost collapse**: Gemini and similar models make personalized copy cheap and fast.
+2. **SMS dominance in Africa**: 95%+ open rates; still the primary channel for transactional and marketing comms.
+3. **Retention > Acquisition**: In a tighter funding environment, keeping users is cheaper than acquiring new ones.
+4. **No incumbent**: No retention-focused SaaS built for African B2C apps with local SMS delivery baked in.
 
 ---
 
-## Notes on Pricing
+## Competitive Landscape
 
-- SMS carrier fees vary by country; the above assumes a margin on top of the raw provider cost.  
-- Gemini API costs can be passed through or baked into the per‑inference rate.  
-- For new regions or early lighthouse customers, you can discount base fees by 20–40% in exchange for case studies.
+| Player | Weakness |
+|--------|----------|
+| Generic CRMs (HubSpot, Freshsales) | No churn prediction, no AI copy, weak SMS in Africa |
+| Marketing automation (Braze, CleverTap) | Expensive, overkill for SMS-first markets |
+| SMS providers (Africa's Talking, Twilio) | Delivery only—no intelligence layer |
+| In-house scripts | Fragile, no UI, no Gemini integration |
+
+**Retention Lab** is the **only** tool that combines prediction + AI copy + African SMS delivery in a single, affordable package.
+
+---
+
+## Summary
+
+| | |
+|---|---|
+| **Use case** | Proactive churn prevention for B2C apps in Africa |
+| **Model** | Platform fee + usage (inference + SMS) |
+| **Integrations** | Dashboard, REST API, webhooks, CRM connectors (roadmap) |
+| **Distribution** | Direct → Partner channel → Self-serve |
+| **Differentiation** | AI + SMS + Africa-first, all-in-one |
