@@ -1,6 +1,8 @@
 import csv
 import io
+import os
 
+from django.http import FileResponse, Http404
 from rest_framework import generics, status
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny
@@ -9,6 +11,14 @@ from rest_framework.views import APIView
 
 from .models import User
 from .serializers import UserPreferencesSerializer, UserSerializer
+
+
+def download_sample_csv(request):
+    """Serve the sample CSV file for download."""
+    file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'sample_customers.csv')
+    if not os.path.exists(file_path):
+        raise Http404("Sample CSV not found")
+    return FileResponse(open(file_path, 'rb'), as_attachment=True, filename='sample_customers.csv')
 
 
 class UserListView(generics.ListCreateAPIView):

@@ -242,6 +242,7 @@
             },
             sms: { form: { phone_number: '', message: '', async: false }, loading: false, result: null },
             users: { list: [], loading: false, error: null },
+            bulkUpload: { file: null, loading: false, result: null },
 
             init() {
                 const savedAuth = localStorage.getItem('retention_auth');
@@ -335,6 +336,63 @@
 
             async checkServices() {
                 try { const r = await fetch('/api/communications/status/'); this.services.sms = r.ok; } catch { this.services.sms = false; }
+            },
+
+            analyzeUser(user) {
+                // Use customer name (first + last) instead of ID
+                const name = [(user.first_name || ''), (user.last_name || '')].filter(n => n).join(' ') || user.username || user.email;
+                this.inference.form.user_id = name;
+                this.inference.form.phone_number = user.phone_number || '';
+                
+                // Pre-fill engagement data from user preferences if available
+                const prefs = user.preferences || {};
+                if (prefs.engagement_score !== undefined) {
+                    this.inference.form.engagement_score = prefs.engagement_score;
+                }
+                if (prefs.last_active_days !== undefined) {
+                    this.inference.form.last_active_days = prefs.last_active_days;
+                }
+                
+                // Build extra features JSON from remaining preferences
+                const extraFeatures = {};
+                for (const key of ['rides_last_30_days', 'city', 'segment']) {
+                    if (prefs[key] !== undefined) {
+                        extraFeatures[key] = prefs[key];
+                    }
+                }
+                if (Object.keys(extraFeatures).length > 0) {
+                    this.inference.form.extraRaw = JSON.stringify(extraFeatures, null, 2);
+                } else {
+                    this.inference.form.extraRaw = '';
+                }
+                
+                this.currentView = 'inference';
+            },
+
+            async uploadCSV() {
+                if (!this.bulkUpload.file) return;
+                this.bulkUpload.loading = true;
+                this.bulkUpload.result = null;
+                
+                const formData = new FormData();
+                formData.append('file', this.bulkUpload.file);
+                
+                try {
+                    const resp = await fetch('/api/users/bulk-upload/', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await resp.json();
+                    this.bulkUpload.result = data;
+                    if (data.created > 0 || data.updated > 0) {
+                        this.loadUsers();  // Refresh the user list
+                    }
+                } catch (e) {
+                    this.bulkUpload.result = { error: 'Upload failed', errors: 1 };
+                } finally {
+                    this.bulkUpload.loading = false;
+                    this.bulkUpload.file = null;
+                }
             }
         };
     }

@@ -1,0 +1,12 @@
+__pycache__
+*.py[cod]
+*.log
+.env
+venv/
+backend/venv/
+.git/
+.gitignore
+Dockerfile
+*.sqlite3
+media/
+staticfiles/

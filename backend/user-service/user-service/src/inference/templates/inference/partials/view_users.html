@@ -1,5 +1,65 @@
 <!-- Users View - Customer Management -->
 <div x-show="currentView === 'users'" x-cloak>
+    <!-- Bulk Upload Card -->
+    <div class="card mb-4" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+            <h2 class="card-title">Bulk Upload Customers</h2>
+            <a href="/api/users/sample-csv/" download class="btn btn-secondary btn-sm">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Download Sample CSV
+            </a>
+        </div>
+        <div class="card-body">
+            <form @submit.prevent="uploadCSV()">
+                <div class="flex items-center gap-3" style="flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1; min-width: 250px; margin-bottom: 0;">
+                        <input type="file" 
+                               class="form-input" 
+                               accept=".csv" 
+                               @change="bulkUpload.file = $event.target.files[0]"
+                               style="padding: 0.5rem;" />
+                    </div>
+                    <button type="submit" class="btn btn-primary" :disabled="!bulkUpload.file || bulkUpload.loading">
+                        <span class="spinner" x-show="bulkUpload.loading"></span>
+                        <svg x-show="!bulkUpload.loading" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                        </svg>
+                        <span x-text="bulkUpload.loading ? 'Uploading...' : 'Upload CSV'"></span>
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Upload Result -->
+            <div class="alert mt-4" :class="bulkUpload.result?.errors > 0 ? 'alert-error' : 'alert-success'" x-show="bulkUpload.result">
+                <svg class="alert-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path x-show="bulkUpload.result?.errors === 0" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    <path x-show="bulkUpload.result?.errors > 0" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div class="alert-content">
+                    <div class="alert-title">Upload Complete</div>
+                    <div>
+                        <span class="badge badge-success" style="margin-right: 0.5rem;" x-show="bulkUpload.result?.created > 0">
+                            <span x-text="bulkUpload.result?.created"></span> created
+                        </span>
+                        <span class="badge badge-info" style="margin-right: 0.5rem;" x-show="bulkUpload.result?.updated > 0">
+                            <span x-text="bulkUpload.result?.updated"></span> updated
+                        </span>
+                        <span class="badge badge-error" x-show="bulkUpload.result?.errors > 0">
+                            <span x-text="bulkUpload.result?.errors"></span> errors
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-panel mt-4">
+                <div class="result-panel-title">CSV Format</div>
+                <pre class="mono text-sm" style="margin: 0.5rem 0 0; color: var(--text-secondary); overflow-x: auto;">first_name,last_name,email,phone_number,engagement_score,last_active_days,rides_last_30_days,city,segment</pre>
+            </div>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-header">
             <h2 class="card-title">Customer Management</h2>
@@ -57,7 +117,7 @@
                                 <td x-text="user.email || '-'"></td>
                                 <td x-text="user.phone_number || '-'"></td>
                                 <td>
-                                    <button class="btn btn-ghost btn-sm" @click="inference.form.user_id = user.id; inference.form.phone_number = user.phone_number || ''; currentView = 'inference'">
+                                    <button class="btn btn-ghost btn-sm" @click="analyzeUser(user)">
                                         Analyze
                                     </button>
                                 </td>
