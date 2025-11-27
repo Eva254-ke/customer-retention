@@ -44,15 +44,12 @@ def _build_prompt(user_id: str, risk: float, features: Dict[str, Any]) -> str:
     return f"{base_context}\nUser context: {json.dumps(details, ensure_ascii=False)}"
 
 
-def generate_retention_message(user_id: str, risk: float, features: Dict[str, Any]) -> Optional[str]:
+def generate_retention_message(user_id: str, risk: float, features: Dict[str, Any]) -> str:
     """Call Gemini to generate a personalized retention SMS.
 
-    Returns a short message string, or None if generation fails or is misconfigured.
+    Returns a short message string or raises ValueError if generation fails
+    or the response has no usable text.
     """
-    if not _GEMINI_API_KEY:
-        logger.warning("GEMINI_API_KEY is not set; skipping Gemini retention message generation.")
-        return None
-
     prompt = _build_prompt(user_id=user_id, risk=risk, features=features)
 
     payload: Dict[str, Any] = {
@@ -64,26 +61,28 @@ def generate_retention_message(user_id: str, risk: float, features: Dict[str, An
                 ],
             }
         ],
+        # Keep temperature at 1.0 as recommended for Gemini 3 models and
+        # avoid an aggressive max token cap so that the model has room
+        # to respond fully.
         "generationConfig": {
             "temperature": 1.0,
-            "maxOutputTokens": 64,
         },
     }
 
     params = {"key": _GEMINI_API_KEY}
 
     try:
-        response = _SESSION.post(_GEMINI_ENDPOINT, json=payload, params=params, timeout=5)
+        response = _SESSION.post(_GEMINI_ENDPOINT, json=payload, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
     except Exception as exc:  # noqa: BLE001
-        logger.warning("Gemini API call failed: %s", exc)
-        return None
+        logger.error("Gemini API call failed: %s", exc)
+        raise ValueError(f"Gemini API call failed: {exc}") from exc
 
     candidates = data.get("candidates") or []
     if not candidates:
-        logger.warning("Gemini API returned no candidates: %s", data)
-        return None
+        logger.error("Gemini API returned no candidates: %s", data)
+        raise ValueError("Gemini API returned no candidates")
 
     first = candidates[0]
     content = first.get("content") or {}
@@ -93,10 +92,10 @@ def generate_retention_message(user_id: str, risk: float, features: Dict[str, An
         text = part.get("text")
         if isinstance(text, str) and text.strip():
             message = text.strip()
-            # Be conservative and keep the SMS short.
-            if len(message) > 320:
-                message = message[:320]
+            # Keep the SMS reasonably short, but do not hard-fail on length.
+            if len(message) > 480:
+                message = message[:480]
             return message
 
-    logger.warning("Gemini API response had no usable text parts: %s", data)
-    return None
+    logger.error("Gemini API response had no usable text parts: %s", data)
+    raise ValueError("Gemini API response had no usable text parts")
