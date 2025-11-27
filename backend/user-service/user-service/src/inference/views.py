@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -55,3 +56,7 @@ class PredictionView(APIView):
             'retention_message': retention_message,
             'sms': sms_info,
         })
+
+
+def dashboard(request):
+    return render(request, 'inference/dashboard.html')

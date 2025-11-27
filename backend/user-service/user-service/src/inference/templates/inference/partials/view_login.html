@@ -1,0 +1,39 @@
+<!-- Login View -->
+<div x-show="currentView === 'login'" x-cloak>
+    <div style="max-width: 400px; margin: 2rem auto;">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Sign In</h2>
+            </div>
+            <div class="card-body">
+                <form @submit.prevent="login()">
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-input" x-model="auth.form.username" placeholder="Enter username" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Token / User ID</label>
+                        <input type="text" class="form-input" x-model="auth.form.token" placeholder="Enter token" />
+                        <p class="form-hint">For demo: use any numeric ID (e.g., 1)</p>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;" :disabled="auth.loading">
+                        <span class="spinner" x-show="auth.loading"></span>
+                        <span x-text="auth.loading ? 'Signing in...' : 'Sign In'"></span>
+                    </button>
+                    <p class="form-error mt-2" x-show="auth.error" x-text="auth.error"></p>
+                </form>
+                
+                <div class="result-panel mt-4">
+                    <div class="result-panel-title">Authentication Info</div>
+                    <p class="text-sm text-muted mt-2">
+                        This platform uses token-based authentication. The token is sent in the 
+                        <code class="mono">Authorization</code> header for API requests.
+                    </p>
+                    <p class="text-sm text-muted mt-2">
+                        For development/demo purposes, you can use any numeric user ID as the token.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

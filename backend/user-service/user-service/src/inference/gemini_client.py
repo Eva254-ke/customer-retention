@@ -28,12 +28,12 @@ def _build_prompt(user_id: str, risk: float, features: Dict[str, Any]) -> str:
         "You are a retention assistant for a consumer app. "
         "Write a short, friendly SMS (<= 160 characters) encouraging the user to come back. "
         "Do not add any labels like 'SMS:' or explanations, only the message body. "
-        "If the user has provided a phone number, include it in the message. "
-        "The phone number may be in the features dictionary under 'phone_number' key. "
-        "If the phone number is not available, do not include it."
+        "Do NOT include any phone numbers in the message - the user's phone number is only for delivery purposes. "
+        "Focus on a warm, personalized message based on the user's name and engagement data."
     )
 
-    safe_features = {k: v for k, v in features.items() if isinstance(k, str)}
+    # Exclude phone_number from features sent to prompt - it's for SMS delivery only, not message content
+    safe_features = {k: v for k, v in features.items() if isinstance(k, str) and k != 'phone_number'}
 
     details = {
         "user_id": user_id,

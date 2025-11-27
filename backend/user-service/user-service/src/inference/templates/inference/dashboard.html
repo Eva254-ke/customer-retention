@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en" x-data="dashboardApp()" x-init="init()">
+<head>
+    <meta charset="UTF-8" />
+    <title>Customer Retention Platform</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+        --bg-primary: #0a0a0f;
+        --bg-secondary: #12121a;
+        --bg-tertiary: #1a1a24;
+        --bg-hover: #22222e;
+        --border-color: #2a2a3a;
+        --border-light: #3a3a4a;
+        --text-primary: #f4f4f5;
+        --text-secondary: #a1a1aa;
+        --text-muted: #71717a;
+        --accent-primary: #6366f1;
+        --accent-hover: #818cf8;
+        --success: #22c55e;
+        --success-bg: rgba(34, 197, 94, 0.1);
+        --warning: #f59e0b;
+        --warning-bg: rgba(245, 158, 11, 0.1);
+        --error: #ef4444;
+        --error-bg: rgba(239, 68, 68, 0.1);
+        --info: #3b82f6;
+        --info-bg: rgba(59, 130, 246, 0.08);
+    }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; margin: 0; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+    [x-cloak] { display: none !important; }
+    .app-container { display: flex; min-height: 100vh; }
+    .sidebar { width: 260px; background: var(--bg-secondary); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+    .sidebar-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+    .logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--text-primary); }
+    .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent-primary), #8b5cf6); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.875rem; }
+    .logo-text { font-weight: 600; font-size: 1rem; }
+    .sidebar-nav { flex: 1; padding: 1rem 0.75rem; overflow-y: auto; }
+    .nav-section { margin-bottom: 1.5rem; }
+    .nav-section-title { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); padding: 0 0.75rem; margin-bottom: 0.5rem; }
+    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border-radius: 6px; color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.15s ease; border: none; background: none; width: 100%; text-align: left; }
+    .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .nav-item.active { background: var(--accent-primary); color: white; }
+    .nav-icon { width: 18px; height: 18px; opacity: 0.8; }
+    .sidebar-footer { padding: 1rem 1.25rem; border-top: 1px solid var(--border-color); }
+    .user-info { display: flex; align-items: center; gap: 0.75rem; }
+    .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.875rem; }
+    .user-details { flex: 1; min-width: 0; }
+    .user-name { font-size: 0.875rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-role { font-size: 0.75rem; color: var(--text-muted); }
+    .main-content { flex: 1; margin-left: 260px; min-height: 100vh; }
+    .topbar { height: 60px; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; position: sticky; top: 0; z-index: 50; }
+    .page-title { font-size: 1rem; font-weight: 600; margin: 0; }
+    .topbar-actions { display: flex; align-items: center; gap: 0.75rem; }
+    .content-area { padding: 1.5rem; }
+    .card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; }
+    .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
+    .card-title { font-size: 0.9rem; font-weight: 600; margin: 0; }
+    .card-body { padding: 1.25rem; }
+    .badge { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600; }
+    .badge-success { background: var(--success-bg); color: var(--success); border: 1px solid rgba(34, 197, 94, 0.3); }
+    .badge-warning { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-error { background: var(--error-bg); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-info { background: var(--info-bg); color: var(--info); border: 1px solid rgba(59, 130, 246, 0.3); }
+    .badge-neutral { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border-color); }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.375rem; }
+    .form-input, .form-textarea, .form-select { width: 100%; padding: 0.625rem 0.875rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.875rem; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { outline: none; border-color: var(--accent-primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); }
+    .form-textarea { resize: vertical; min-height: 100px; font-family: inherit; }
+    .form-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+    .form-error { font-size: 0.75rem; color: var(--error); margin-top: 0.25rem; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.625rem 1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s ease; }
+    .btn-primary { background: var(--accent-primary); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); }
+    .btn-secondary:hover { background: var(--bg-hover); border-color: var(--border-light); }
+    .btn-ghost { background: transparent; color: var(--text-secondary); }
+    .btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.8rem; }
+    .btn-icon { padding: 0.5rem; }
+    .chip-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .chip { padding: 0.375rem 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer; transition: all 0.15s ease; }
+    .chip:hover { border-color: var(--accent-primary); color: var(--text-primary); }
+    .grid { display: grid; gap: 1.5rem; }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .result-panel { background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+    .result-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+    .result-panel-title { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.025em; }
+    .result-message { background: var(--info-bg); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 1rem; font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); }
+    .alert { padding: 0.875rem 1rem; border-radius: 8px; font-size: 0.85rem; display: flex; align-items: flex-start; gap: 0.75rem; }
+    .alert-error { background: var(--error-bg); border: 1px solid rgba(239, 68, 68, 0.3); color: #fecaca; }
+    .alert-success { background: var(--success-bg); border: 1px solid rgba(34, 197, 94, 0.3); color: #bbf7d0; }
+    .alert-icon { flex-shrink: 0; margin-top: 0.125rem; }
+    .alert-content { flex: 1; }
+    .alert-title { font-weight: 600; margin-bottom: 0.25rem; }
+    .risk-meter { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg-tertiary); border-radius: 8px; }
+    .risk-circle { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; font-weight: 700; }
+    .risk-low { background: var(--success-bg); color: var(--success); border: 2px solid var(--success); }
+    .risk-medium { background: var(--warning-bg); color: var(--warning); border: 2px solid var(--warning); }
+    .risk-high { background: var(--error-bg); color: var(--error); border: 2px solid var(--error); }
+    .risk-details { flex: 1; }
+    .risk-label { font-size: 0.8rem; color: var(--text-muted); }
+    .risk-status { font-size: 1rem; font-weight: 600; margin-top: 0.125rem; }
+    .service-status { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 0.5rem; }
+    .service-status:last-child { margin-bottom: 0; }
+    .service-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .service-icon.gemini { background: linear-gradient(135deg, #4285f4, #34a853); }
+    .service-icon.sms { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+    .service-icon.auth { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+    .service-info { flex: 1; }
+    .service-name { font-size: 0.875rem; font-weight: 500; }
+    .service-endpoint { font-size: 0.7rem; color: var(--text-muted); font-family: monospace; }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th, .data-table td { text-align: left; padding: 0.75rem; }
+    .data-table th { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; border-bottom: 1px solid var(--border-color); }
+    .data-table td { font-size: 0.875rem; border-bottom: 1px solid var(--border-color); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .mono { font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace; }
+    .text-sm { font-size: 0.875rem; }
+    .text-xs { font-size: 0.75rem; }
+    .text-muted { color: var(--text-muted); }
+    .mt-2 { margin-top: 0.5rem; }
+    .mt-4 { margin-top: 1rem; }
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-3 { gap: 0.75rem; }
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    .spinner-lg { width: 32px; height: 32px; border-width: 3px; border-color: var(--border-color); border-top-color: var(--accent-primary); margin: 0 auto 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 3rem 1.5rem; color: var(--text-muted); }
+    .empty-state-icon { width: 48px; height: 48px; margin: 0 auto 1rem; opacity: 0.5; }
+    .empty-state-title { font-size: 0.9rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.25rem; }
+    .empty-state-text { font-size: 0.8rem; }
+    @media (max-width: 1024px) { .grid-2 { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .main-content { margin-left: 0; } }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" :class="{ 'open': sidebarOpen }">
+            <div class="sidebar-header">
+                <a href="#" class="logo">
+                    <div class="logo-icon">CR</div>
+                    <span class="logo-text">Retention Platform</span>
+                </a>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Core Services</div>
+                    <button class="nav-item" :class="{ 'active': currentView === 'inference' }" @click="currentView = 'inference'">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        Churn Prediction
+                    </button>
+                    <button class="nav-item" :class="{ 'active': currentView === 'sms' }" @click="currentView = 'sms'">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                        SMS Messaging
+                    </button>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Management</div>
+                    <button class="nav-item" :class="{ 'active': currentView === 'users' }" @click="currentView = 'users'">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        Customers
+                    </button>
+                    <button class="nav-item" :class="{ 'active': currentView === 'analytics' }" @click="currentView = 'analytics'">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        Analytics
+                    </button>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">System</div>
+                    <button class="nav-item" :class="{ 'active': currentView === 'status' }" @click="currentView = 'status'">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        Service Status
+                    </button>
+                </div>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" x-text="auth.user ? auth.user.name.charAt(0).toUpperCase() : 'G'"></div>
+                    <div class="user-details">
+                        <div class="user-name" x-text="auth.user ? auth.user.name : 'Guest'"></div>
+                        <div class="user-role" x-text="auth.user ? 'Authenticated' : 'Not logged in'"></div>
+                    </div>
+                    <button class="btn btn-ghost btn-icon" @click="auth.user ? logout() : currentView = 'login'" :title="auth.user ? 'Logout' : 'Login'">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path x-show="auth.user" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            <path x-show="!auth.user" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="flex items-center gap-3">
+                    <h1 class="page-title" x-text="getPageTitle()"></h1>
+                </div>
+                <div class="topbar-actions">
+                    <span class="badge" :class="services.gemini ? 'badge-success' : 'badge-warning'">
+                        <span class="status-dot"></span>
+                        <span x-text="services.gemini ? 'Gemini Ready' : 'Gemini Unavailable'"></span>
+                    </span>
+                </div>
+            </header>
+            
+            <div class="content-area">
+                {% include "inference/partials/view_inference.html" %}
+                {% include "inference/partials/view_sms.html" %}
+                {% include "inference/partials/view_users.html" %}
+                {% include "inference/partials/view_analytics.html" %}
+                {% include "inference/partials/view_status.html" %}
+                {% include "inference/partials/view_login.html" %}
+            </div>
+        </main>
+    </div>
+    <script>
+    function dashboardApp() {
+        return {
+            currentView: 'inference',
+            sidebarOpen: false,
+            auth: { user: null, form: { username: '', token: '' }, loading: false, error: null },
+            services: { gemini: true, sms: true, auth: true },
+            inference: {
+                form: { user_id: '', phone_number: '', engagement_score: 0.5, last_active_days: 7, extraRaw: '' },
+                loading: false, error: null, rawError: null, errors: {},
+                result: { churn_risk: null, retention_message: '', sms: null }
+            },
+            sms: { form: { phone_number: '', message: '', async: false }, loading: false, result: null },
+            users: { list: [], loading: false, error: null },
+
+            init() {
+                const savedAuth = localStorage.getItem('retention_auth');
+                if (savedAuth) { try { this.auth.user = JSON.parse(savedAuth); } catch (e) {} }
+            },
+
+            getPageTitle() {
+                const titles = { inference: 'Churn Prediction', sms: 'SMS Messaging', users: 'Customer Management', analytics: 'Analytics', status: 'Service Status', login: 'Sign In' };
+                return titles[this.currentView] || 'Dashboard';
+            },
+
+            login() {
+                if (!this.auth.form.username || !this.auth.form.token) { this.auth.error = 'Please fill in all fields'; return; }
+                this.auth.loading = true; this.auth.error = null;
+                setTimeout(() => {
+                    this.auth.user = { name: this.auth.form.username, token: this.auth.form.token };
+                    localStorage.setItem('retention_auth', JSON.stringify(this.auth.user));
+                    this.auth.loading = false; this.auth.form = { username: '', token: '' }; this.currentView = 'inference';
+                }, 500);
+            },
+
+            logout() { this.auth.user = null; localStorage.removeItem('retention_auth'); },
+
+            applyPreset(type) {
+                const presets = {
+                    high: { engagement_score: 0.1, last_active_days: 30, extraRaw: '{"rides_last_30_days": 0, "segment": "churned"}' },
+                    medium: { engagement_score: 0.4, last_active_days: 14, extraRaw: '{"rides_last_30_days": 3, "segment": "at_risk"}' },
+                    low: { engagement_score: 0.8, last_active_days: 2, extraRaw: '{"rides_last_30_days": 10, "segment": "loyal"}' }
+                };
+                const p = presets[type];
+                if (p) { this.inference.form.engagement_score = p.engagement_score; this.inference.form.last_active_days = p.last_active_days; this.inference.form.extraRaw = p.extraRaw; }
+            },
+
+            async runInference() {
+                this.inference.errors = {}; this.inference.error = null; this.inference.rawError = null;
+                if (!this.inference.form.user_id.trim()) { this.inference.errors.user_id = 'Customer ID is required'; return; }
+                if (this.inference.form.extraRaw.trim()) { try { JSON.parse(this.inference.form.extraRaw); } catch (e) { this.inference.errors.extraRaw = 'Invalid JSON'; return; } }
+
+                this.inference.loading = true;
+                this.inference.result = { churn_risk: null, retention_message: '', sms: null };
+
+                let features = { engagement_score: Number(this.inference.form.engagement_score) || 0, last_active_days: Number(this.inference.form.last_active_days) || 0 };
+                if (this.inference.form.phone_number.trim()) features.phone_number = this.inference.form.phone_number.trim();
+                if (this.inference.form.extraRaw.trim()) { try { Object.assign(features, JSON.parse(this.inference.form.extraRaw)); } catch (e) {} }
+
+                try {
+                    const resp = await fetch('/api/inference/predict/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: this.inference.form.user_id.trim(), features })
+                    });
+                    const data = await resp.json().catch(() => ({}));
+                    if (!resp.ok) { this.inference.error = data.error || `Request failed (${resp.status})`; this.inference.rawError = JSON.stringify(data, null, 2); }
+                    else { this.inference.result = { churn_risk: data.churn_risk ?? null, retention_message: data.retention_message || '', sms: data.sms || null }; }
+                } catch (e) { this.inference.error = 'Network error'; this.inference.rawError = String(e); }
+                finally { this.inference.loading = false; }
+            },
+
+            getRiskClass(r) { if (r === null) return ''; if (r > 0.6) return 'risk-high'; if (r > 0.3) return 'risk-medium'; return 'risk-low'; },
+            getRiskBadgeClass(r) { if (r === null) return 'badge-neutral'; if (r > 0.6) return 'badge-error'; if (r > 0.3) return 'badge-warning'; return 'badge-success'; },
+            getRiskLevel(r) { if (r === null) return 'Unknown'; if (r > 0.6) return 'High Risk'; if (r > 0.3) return 'Medium Risk'; return 'Low Risk'; },
+            getRiskLabel(r) { if (r === null) return ''; if (r > 0.6) return 'Immediate attention needed'; if (r > 0.3) return 'Monitor closely'; return 'Customer is engaged'; },
+            formatRisk(r) { if (r === null) return '-'; return `${(r * 100).toFixed(1)}%`; },
+
+            async sendDirectSMS() {
+                if (!this.sms.form.phone_number || !this.sms.form.message) { this.sms.result = { error: 'Phone and message required' }; return; }
+                this.sms.loading = true; this.sms.result = null;
+                try {
+                    const resp = await fetch('/api/communications/send-sms/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phone_number: this.sms.form.phone_number, message: this.sms.form.message, async: this.sms.form.async })
+                    });
+                    const data = await resp.json().catch(() => ({}));
+                    if (!resp.ok) { this.sms.result = { error: data.error || 'Failed' }; }
+                    else { this.sms.result = { status: data.status, message_id: data.message_id, task: data.task }; this.sms.form.message = ''; }
+                } catch (e) { this.sms.result = { error: 'Network error' }; }
+                finally { this.sms.loading = false; }
+            },
+
+            async loadUsers() {
+                this.users.loading = true; this.users.error = null;
+                try {
+                    const resp = await fetch('/api/users/');
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const data = await resp.json();
+                    this.users.list = Array.isArray(data) ? data : (data.results || []);
+                } catch (e) { this.users.error = 'Failed to load customers'; this.users.list = []; }
+                finally { this.users.loading = false; }
+            },
+
+            async checkServices() {
+                try { const r = await fetch('/api/communications/status/'); this.services.sms = r.ok; } catch { this.services.sms = false; }
+            }
+        };
+    }
+    </script>
+</body>
+</html>

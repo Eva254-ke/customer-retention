@@ -1,0 +1,131 @@
+<!-- Inference View - Churn Prediction -->
+<div x-show="currentView === 'inference'" x-cloak>
+    <div class="grid grid-2">
+        <!-- Input Form -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Customer Analysis</h2>
+                <div class="chip-group">
+                    <button class="chip" @click="applyPreset('high')">High Risk</button>
+                    <button class="chip" @click="applyPreset('medium')">Medium</button>
+                    <button class="chip" @click="applyPreset('low')">Loyal</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <form @submit.prevent="runInference()">
+                    <div class="form-group">
+                        <label class="form-label">Customer Name / ID</label>
+                        <input type="text" class="form-input" x-model="inference.form.user_id" placeholder="e.g. Jane Mwangi" />
+                        <p class="form-error" x-show="inference.errors.user_id" x-text="inference.errors.user_id"></p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Phone Number (E.164)</label>
+                        <input type="tel" class="form-input" x-model="inference.form.phone_number" placeholder="+254700000001" />
+                        <p class="form-hint">Required for SMS delivery</p>
+                    </div>
+                    
+                    <div class="grid grid-2" style="gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Engagement Score</label>
+                            <input type="number" class="form-input" min="0" max="1" step="0.01" x-model.number="inference.form.engagement_score" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Days Since Active</label>
+                            <input type="number" class="form-input" min="0" step="1" x-model.number="inference.form.last_active_days" />
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Additional Features (JSON)</label>
+                        <textarea class="form-textarea mono" x-model="inference.form.extraRaw" placeholder='{"rides_last_30_days": 4, "city": "Nairobi"}'></textarea>
+                        <p class="form-error" x-show="inference.errors.extraRaw" x-text="inference.errors.extraRaw"></p>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;" :disabled="inference.loading">
+                        <span class="spinner" x-show="inference.loading"></span>
+                        <span x-text="inference.loading ? 'Analyzing...' : 'Run Prediction & Send SMS'"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Results -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Prediction Results</h2>
+            </div>
+            <div class="card-body">
+                <!-- Error State -->
+                <div class="alert alert-error" x-show="inference.error">
+                    <svg class="alert-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div class="alert-content">
+                        <div class="alert-title">Error</div>
+                        <div x-text="inference.error"></div>
+                        <div class="mono text-xs mt-2" x-show="inference.rawError" x-text="inference.rawError"></div>
+                    </div>
+                </div>
+                
+                <!-- Empty State -->
+                <div class="empty-state" x-show="!inference.result.churn_risk && !inference.error && !inference.loading">
+                    <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                    <div class="empty-state-title">No prediction yet</div>
+                    <div class="empty-state-text">Fill in customer details and run a prediction</div>
+                </div>
+                
+                <!-- Loading State -->
+                <div class="empty-state" x-show="inference.loading">
+                    <div class="spinner spinner-lg"></div>
+                    <div class="empty-state-title">Analyzing customer...</div>
+                    <div class="empty-state-text">Running Gemini prediction and sending SMS</div>
+                </div>
+                
+                <!-- Results -->
+                <div x-show="inference.result.churn_risk !== null && !inference.loading">
+                    <!-- Risk Score -->
+                    <div class="risk-meter">
+                        <div class="risk-circle" :class="getRiskClass(inference.result.churn_risk)">
+                            <span x-text="formatRisk(inference.result.churn_risk)"></span>
+                        </div>
+                        <div class="risk-details">
+                            <div class="risk-label">Churn Risk Score</div>
+                            <div class="risk-status" x-text="getRiskLabel(inference.result.churn_risk)"></div>
+                        </div>
+                        <span class="badge" :class="getRiskBadgeClass(inference.result.churn_risk)">
+                            <span class="status-dot"></span>
+                            <span x-text="getRiskLevel(inference.result.churn_risk)"></span>
+                        </span>
+                    </div>
+                    
+                    <!-- Retention Message -->
+                    <div class="result-panel" x-show="inference.result.retention_message">
+                        <div class="result-panel-header">
+                            <span class="result-panel-title">AI-Generated Message</span>
+                            <span class="badge badge-info">Gemini</span>
+                        </div>
+                        <div class="result-message" x-text="inference.result.retention_message"></div>
+                    </div>
+                    
+                    <!-- SMS Status -->
+                    <div class="result-panel" x-show="inference.result.sms">
+                        <div class="result-panel-header">
+                            <span class="result-panel-title">SMS Delivery</span>
+                            <span class="badge" :class="inference.result.sms?.status === 'sent' ? 'badge-success' : 'badge-error'">
+                                <span class="status-dot"></span>
+                                <span x-text="inference.result.sms?.status"></span>
+                            </span>
+                        </div>
+                        <div class="text-sm text-muted">
+                            <span x-show="inference.result.sms?.message_id">Message ID: <span class="mono" x-text="inference.result.sms?.message_id"></span></span>
+                            <span class="form-error" x-show="inference.result.sms?.error" x-text="inference.result.sms?.error"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
