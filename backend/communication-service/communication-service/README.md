@@ -7,7 +7,7 @@ This service is responsible for managing communication with users through SMS, U
 - **SMS Messaging**: Send personalized SMS messages to users based on churn risk predictions.
 - **USSD Surveys**: Engage users through USSD for feedback and surveys.
 - **Voice Calls**: Automate voice calls for important notifications and reminders.
-- **Task Queue**: Utilizes Celery for handling background tasks such as message sending and retries.
+- **Task Queue**: Ships with a lightweight in-memory queue for background SMS delivery without Redis.
 
 ## Architecture
 
@@ -16,7 +16,8 @@ This service is responsible for managing communication with users through SMS, U
   - `africas_talking.py`: Functions for interacting with the Africa's Talking API.
   - `messaging.py`: Logic for handling messaging workflows.
 - **Tasks**: 
-  - `celery_tasks.py`: Defines Celery tasks for asynchronous message processing.
+  - `in_memory_db.py`: Thread-safe key-value store plus queue utilities that replace Redis.
+  - `sms_queue.py`: Handles SMS background jobs using the in-memory queue.
 - **Routes**: 
   - `communications.py`: API endpoints for triggering communications.
 

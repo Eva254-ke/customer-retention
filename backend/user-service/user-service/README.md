@@ -12,8 +12,7 @@ This is the User Service component of the Retain project, designed to manage use
 ## Technologies Used
 
 - **Django REST Framework**: For building the RESTful API.
-- **PostgreSQL**: As the database for storing user data (configuration in `settings.py`).
-- **Celery**: For handling asynchronous tasks related to user notifications.
+- **SQLite**: Lightweight relational database used for persisting user data in local development and testing.
 - **Docker**: For containerization of the service.
 
 ## Setup Instructions
