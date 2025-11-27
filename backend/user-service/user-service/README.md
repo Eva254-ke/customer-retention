@@ -1,69 +1,30 @@
-# User Service for Retain
+# Retain Monolith
 
-This is the User Service component of the Retain project, designed to manage user profiles, preferences, and authentication for transport and health startups in Kenya.
+This directory hosts the unified Django project that now powers user management, communications, inference, and analytics for the hackathon.
 
-## Features
+## Setup
 
-- **User Profiles**: Create, read, update, and delete user profiles.
-- **Preferences Management**: Allow users to set and update their preferences.
-- **Opt-in Management**: Manage user consent for communications.
-- **Secure Authentication**: Implement secure user authentication and authorization.
-
-## Technologies Used
-
-- **Django REST Framework**: For building the RESTful API.
-- **SQLite**: Lightweight relational database used for persisting user data in local development and testing.
-- **Docker**: For containerization of the service.
-
-## Setup Instructions
-
-1. **Clone the Repository**:
+1. Create/activate a virtual environment.
+2. Install dependencies:
    ```
-   git clone <repository-url>
-   cd retain/services/user-service
+   pip install -r backend/user-service/user-service/requirements.txt
    ```
-
-2. **Install Dependencies**:
+3. Apply migrations and run the dev server:
    ```
-   pip install -r requirements.txt
-   ```
-
-3. **Run Migrations**:
-   ```
+   cd backend/user-service/user-service/src
    python manage.py migrate
-   ```
-
-4. **Start the Development Server**:
-   ```
    python manage.py runserver
    ```
+   Or from the repo root:
+   ```
+   python run_service.py
+   ```
 
-## API Endpoints
+## Key API Surfaces
 
-- **User Registration**: `POST /api/users/register/`
-- **User Login**: `POST /api/users/login/`
-- **Get User Profile**: `GET /api/users/profile/`
-- **Update User Profile**: `PUT /api/users/profile/`
+- `POST /api/communications/send-sms/` – synchronous or async SMS (toggle with `{"async": true}`).
+- `POST /api/inference/predict/` – lightweight churn scoring plus retention messaging.
+- `GET/POST /api/analytics/events/` – log or inspect behavioral events.
+- `GET/POST /api/users/` – manage users; preferences live at `/api/users/<id>/preferences/`.
 
-## Testing
-
-To run tests, use the following command:
-```
-python manage.py test
-```
-
-## Deployment
-
-This service can be deployed using Docker. Build the Docker image with:
-```
-docker build -t user-service .
-```
-
-Then run the container:
-```
-docker run -d -p 8000:8000 user-service
-```
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+All endpoints default to JSON and persist to SQLite (`db.sqlite3`). Africa's Talking credentials can be provided via `AFRICASTALKING_USERNAME` and `AFRICASTALKING_API_KEY`.

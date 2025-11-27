@@ -1,8 +1,10 @@
-from django.urls import path
-from users import views
+from django.contrib import admin
+from django.urls import include, path
 
 urlpatterns = [
-    path('users/', views.UserList.as_view(), name='user-list'),
-    path('users/<int:pk>/', views.UserDetail.as_view(), name='user-detail'),
-    path('users/preferences/', views.UserPreferences.as_view(), name='user-preferences'),
+    path('admin/', admin.site.urls),
+    path('api/users/', include('users.urls')),
+    path('api/communications/', include('communications.urls')),
+    path('api/inference/', include('inference.urls')),
+    path('api/analytics/', include('analytics.urls')),
 ]
