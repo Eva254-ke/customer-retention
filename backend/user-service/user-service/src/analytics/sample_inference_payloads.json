@@ -1,0 +1,45 @@
+[
+  {
+    "user_id": "James KImani1",
+    "features": {
+      "engagement_score": 0.1,
+      "last_active_days": 30,
+      "rides_last_30_days": 1,
+      "phone_number": "+254700000001"
+    }
+  },
+  {
+    "user_id": "John Okello",
+    "features": {
+      "engagement_score": 0.9,
+      "last_active_days": 1,
+      "rides_last_30_days": 15,
+      "phone_number": "+254700000002"
+    }
+  },
+  {
+    "user_id": "Jane Mwangi",
+    "features": {
+      "engagement_score": 0.4,
+      "last_active_days": 10,
+      "rides_last_30_days": 5
+    }
+  },
+  {
+    "user_id": "user_004",
+    "features": {
+      "engagement_score": 0.25,
+      "last_active_days": 21,
+      "rides_last_30_days": 3,
+      "phone_number": "+254700000004"
+    }
+  },
+  {
+    "user_id": "user_005",
+    "features": {
+      "engagement_score": 0.7,
+      "last_active_days": 4,
+      "rides_last_30_days": 8
+    }
+  }
+]
