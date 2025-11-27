@@ -21,7 +21,13 @@ class SendSMSView(APIView):
             task = enqueue_sms_task(phone_number, message)
             return Response({'status': 'queued', 'task': task}, status=status.HTTP_202_ACCEPTED)
 
-        response = send_sms(phone_number, message)
+        try:
+            response = send_sms(phone_number, message)
+        except ValueError as exc:
+            return Response({'error': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as exc:
+            return Response({'error': 'Failed to send SMS', 'details': str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
+
         return Response({'status': 'success', 'response': response}, status=status.HTTP_200_OK)
 
 
